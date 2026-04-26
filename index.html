@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Travel Agent – Smart Travel Planning</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #ffffff; --bg2: #f6f8fa; --bg3: #eef2f7; --border: #d0d7de;
+      --text: #1a1f2e; --text2: #57606a;
+      --blue: #1f6feb; --blue-light: #dbeafe; --blue-dark: #0d4fa8;
+      --green: #1a7f37; --green-light: #dcfce7;
+      --red: #cf222e; --red-light: #fde8e8;
+      --yellow: #9a6700; --yellow-light: #fef9c3;
+      --purple: #6e40c9; --purple-light: #ede9fe;
+      --orange: #c2410c; --orange-light: #fff7ed;
+      --teal: #0d7377; --teal-light: #ccfbf1;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: -apple-system, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+
+    nav { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 0 48px; height: 60px; display: flex; align-items: center; justify-content: space-between; }
+    .logo { display: flex; align-items: center; gap: 10px; font-size: 1.15rem; font-weight: 800; color: var(--text); text-decoration: none; }
+    .logo-mark { width: 34px; height: 34px; background: linear-gradient(135deg, #0d7377, #1f6feb); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 17px; }
+    .logo-tagline { font-size: 0.65rem; color: var(--text2); font-weight: 400; margin-left: 2px; }
+    .nav-links { display: flex; align-items: center; gap: 32px; font-size: 0.875rem; color: var(--text2); }
+    .nav-links a { text-decoration: none; color: var(--text2); transition: color 0.15s; }
+    .nav-links a:hover { color: var(--text); }
+    .nav-cta { display: flex; align-items: center; gap: 10px; }
+    .btn-ghost { background: none; border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 7px 16px; font-size: 0.82rem; font-weight: 600; cursor: pointer; text-decoration: none; }
+    .btn-ghost:hover { background: var(--bg2); }
+    .btn-solid { background: var(--blue); color: #fff; border: none; border-radius: 6px; padding: 7px 16px; font-size: 0.82rem; font-weight: 600; cursor: pointer; text-decoration: none; }
+    .btn-solid:hover { background: var(--blue-dark); }
+
+    .hero { background: linear-gradient(160deg, #f0f9ff 0%, #faf5ff 50%, #f0fdf4 100%); padding: 88px 48px 72px; text-align: center; position: relative; overflow: hidden; }
+    .hero::before { content: ''; position: absolute; top: -80px; left: 50%; transform: translateX(-50%); width: 600px; height: 600px; background: radial-gradient(circle, rgba(13,115,119,0.08) 0%, transparent 70%); pointer-events: none; }
+    .hero-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--teal-light); color: var(--teal); border: 1px solid #99f6e4; border-radius: 20px; padding: 4px 14px; font-size: 0.78rem; font-weight: 600; margin-bottom: 24px; }
+    .hero h1 { font-size: 3rem; font-weight: 800; line-height: 1.15; color: var(--text); max-width: 720px; margin: 0 auto 20px; letter-spacing: -0.02em; }
+    .hero h1 span { background: linear-gradient(90deg, #0d7377, #1f6feb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero-sub { font-size: 1.05rem; color: var(--text2); max-width: 540px; margin: 0 auto 36px; }
+    .hero-btns { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 48px; }
+    .btn-hero-primary { background: var(--teal); color: #fff; border: none; border-radius: 8px; padding: 13px 28px; font-size: 0.95rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+    .btn-hero-primary:hover { background: #0a5c5f; }
+    .btn-hero-secondary { background: #fff; color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 13px 28px; font-size: 0.95rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+    .btn-hero-secondary:hover { background: var(--bg2); }
+    .hero-stats { display: flex; align-items: center; justify-content: center; gap: 40px; padding-top: 32px; border-top: 1px solid rgba(0,0,0,0.08); }
+    .hero-stat { text-align: center; }
+    .hero-stat-val { font-size: 1.6rem; font-weight: 800; color: var(--text); }
+    .hero-stat-label { font-size: 0.78rem; color: var(--text2); margin-top: 2px; }
+    .stat-divider { width: 1px; height: 36px; background: var(--border); }
+
+    .demo-bar { background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 18px 48px; display: flex; align-items: center; justify-content: center; gap: 12px; font-size: 0.8rem; color: var(--text2); }
+    .demo-item { display: flex; align-items: center; gap: 6px; padding: 0 20px; border-right: 1px solid var(--border); }
+    .demo-item:last-child { border-right: none; }
+
+    section { padding: 72px 48px; }
+    .section-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--teal); margin-bottom: 10px; }
+    .section-title { font-size: 2rem; font-weight: 800; color: var(--text); margin-bottom: 14px; letter-spacing: -0.02em; }
+    .section-sub { font-size: 1rem; color: var(--text2); max-width: 520px; margin-bottom: 48px; }
+    .center { text-align: center; }
+    .center .section-sub { margin: 0 auto 48px; }
+
+    .demo-section { background: var(--bg); }
+    .demo-container { max-width: 800px; margin: 0 auto; background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,0.08); }
+    .demo-header { background: linear-gradient(135deg, #0d7377, #1f6feb); padding: 20px 28px; display: flex; align-items: center; gap: 12px; }
+    .demo-header-title { color: #fff; font-size: 1rem; font-weight: 700; }
+    .demo-header-sub { color: rgba(255,255,255,0.8); font-size: 0.78rem; }
+    .demo-body { padding: 28px; }
+    .demo-label { font-size: 0.78rem; font-weight: 700; color: var(--text2); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .demo-textarea { width: 100%; height: 120px; border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; font-size: 0.9rem; line-height: 1.6; resize: vertical; background: #fff; color: var(--text); font-family: inherit; }
+    .demo-textarea:focus { outline: none; border-color: var(--teal); box-shadow: 0 0 0 3px rgba(13,115,119,0.1); }
+    .demo-textarea::placeholder { color: #9ca3af; }
+    .demo-btn-row { display: flex; gap: 12px; margin-top: 16px; }
+    .demo-submit { background: var(--teal); color: #fff; border: none; border-radius: 8px; padding: 11px 24px; font-size: 0.9rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+    .demo-submit:hover { background: #0a5c5f; }
+    .demo-submit.loading { opacity: 0.7; pointer-events: none; }
+    .demo-example { background: none; border: 1px solid var(--border); color: var(--text2); border-radius: 8px; padding: 11px 20px; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+    .demo-example:hover { background: var(--bg2); color: var(--text); }
+    .demo-result { margin-top: 20px; padding: 0; display: none; }
+    .demo-result.show { display: block; }
+    .demo-result-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+    .demo-result-icon { width: 28px; height: 28px; border-radius: 50%; background: var(--teal-light); color: var(--teal); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; }
+    .demo-result-title { font-size: 0.9rem; font-weight: 700; color: var(--text); }
+    .demo-result-content { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 24px; font-size: 0.85rem; line-height: 1.8; color: var(--text); }
+    .demo-result-content h3 { font-size: 1rem; font-weight: 700; margin-bottom: 10px; color: var(--teal); }
+    .demo-result-content .flight-item, .demo-result-content .hotel-item { padding: 14px 0; border-bottom: 1px solid var(--border); }
+    .demo-result-content .flight-item:last-child, .demo-result-content .hotel-item:last-child { border-bottom: none; }
+    .demo-result-content .item-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; color: var(--text2); margin-bottom: 4px; letter-spacing: 0.05em; }
+    .demo-result-content .item-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 4px; }
+    .demo-result-content .item-detail { font-size: 0.82rem; color: var(--text2); }
+    .demo-result-content .item-price { font-weight: 700; color: var(--teal); margin-top: 4px; }
+    .demo-result-content .item-link { display: inline-block; margin-top: 6px; color: var(--blue); text-decoration: none; font-size: 0.8rem; font-weight: 600; }
+    .demo-result-content .item-link:hover { text-decoration: underline; }
+    .demo-error { display: none; margin-top: 16px; padding: 12px 16px; background: var(--red-light); color: var(--red); border-radius: 8px; font-size: 0.85rem; }
+
+    .features-section { background: var(--bg2); }
+    .features-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; max-width: 900px; margin: 0 auto; }
+    .feature-card { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 28px; transition: box-shadow 0.2s; }
+    .feature-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+    .feature-icon-wrap { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 16px; }
+    .fi-teal { background: var(--teal-light); } .fi-blue { background: var(--blue-light); } .fi-purple { background: var(--purple-light); } .fi-orange { background: var(--orange-light); }
+    .feature-card h4 { font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
+    .feature-card p { font-size: 0.83rem; color: var(--text2); line-height: 1.6; margin-bottom: 14px; }
+    .feature-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .ftag { background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; padding: 2px 8px; font-size: 0.7rem; color: var(--text2); }
+
+    .how-section { background: var(--bg); }
+    .steps-row { display: flex; align-items: flex-start; gap: 0; max-width: 900px; margin: 0 auto; position: relative; }
+    .steps-row::before { content: ''; position: absolute; top: 28px; left: 60px; right: 60px; height: 2px; background: linear-gradient(90deg, var(--teal), var(--blue)); z-index: 0; }
+    .step { flex: 1; text-align: center; position: relative; z-index: 1; padding: 0 16px; }
+    .step-num { width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, var(--teal), var(--blue)); color: #fff; font-size: 1.1rem; font-weight: 800; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; border: 3px solid #fff; box-shadow: 0 0 0 3px var(--teal-light); }
+    .step h4 { font-size: 0.9rem; font-weight: 700; margin-bottom: 6px; }
+    .step p { font-size: 0.78rem; color: var(--text2); line-height: 1.5; }
+
+    .tech-section { background: var(--bg2); }
+    .tech-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; max-width: 800px; margin: 0 auto; }
+    .tech-card { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 24px; text-align: center; transition: box-shadow 0.2s; }
+    .tech-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.07); }
+    .tech-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; margin: 0 auto 12px; }
+    .tech-name { font-size: 0.9rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .tech-desc { font-size: 0.75rem; color: var(--text2); line-height: 1.5; }
+
+    .cta-section { background: linear-gradient(135deg, #0d7377 0%, #1f6feb 100%); padding: 72px 48px; text-align: center; color: #fff; }
+    .cta-section h2 { font-size: 2.2rem; font-weight: 800; margin-bottom: 14px; letter-spacing: -0.02em; }
+    .cta-section p { font-size: 1rem; opacity: 0.85; margin-bottom: 36px; max-width: 480px; margin-left: auto; margin-right: auto; }
+    .cta-btns { display: flex; align-items: center; justify-content: center; gap: 12px; }
+    .btn-cta-white { background: #fff; color: var(--teal); border: none; border-radius: 8px; padding: 13px 28px; font-size: 0.95rem; font-weight: 700; cursor: pointer; text-decoration: none; }
+    .btn-cta-white:hover { background: #f0fdfa; }
+    .btn-cta-outline { background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.4); border-radius: 8px; padding: 13px 28px; font-size: 0.95rem; font-weight: 600; cursor: pointer; text-decoration: none; }
+    .btn-cta-outline:hover { background: rgba(255,255,255,0.25); }
+
+    footer { background: var(--text); color: #8b949e; padding: 48px; }
+    .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 40px; margin-bottom: 40px; }
+    .footer-brand p { font-size: 0.82rem; line-height: 1.6; max-width: 300px; margin-top: 12px; }
+    .footer-logo { display: flex; align-items: center; gap: 10px; font-size: 1.1rem; font-weight: 800; color: #fff; margin-bottom: 4px; }
+    .footer-logo-mark { width: 30px; height: 30px; background: linear-gradient(135deg, #0d7377, #1f6feb); border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+    .footer-slogan { font-size: 0.72rem; color: #8b949e; margin-bottom: 10px; }
+    .footer-col h5 { color: #e6edf3; font-size: 0.82rem; font-weight: 700; margin-bottom: 14px; }
+    .footer-col a { display: block; color: #8b949e; font-size: 0.8rem; text-decoration: none; margin-bottom: 8px; }
+    .footer-col a:hover { color: #e6edf3; }
+    .footer-bottom { border-top: 1px solid #30363d; padding-top: 24px; display: flex; align-items: center; justify-content: space-between; font-size: 0.78rem; }
+    .footer-badges { display: flex; gap: 10px; }
+    .footer-badge { background: #21262d; border: 1px solid #30363d; border-radius: 5px; padding: 4px 10px; font-size: 0.7rem; color: #8b949e; }
+
+    @media (max-width: 768px) {
+      nav { padding: 0 20px; }
+      .nav-links { display: none; }
+      .hero { padding: 56px 20px 48px; }
+      .hero h1 { font-size: 2rem; }
+      .hero-stats { flex-wrap: wrap; gap: 20px; }
+      .stat-divider { display: none; }
+      section { padding: 48px 20px; }
+      .features-grid, .tech-grid { grid-template-columns: 1fr; }
+      .steps-row { flex-direction: column; gap: 20px; }
+      .steps-row::before { display: none; }
+      .footer-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="#" class="logo">
+    <div class="logo-mark">&#9992;&#65039;</div>
+    AI Travel Agent
+    <span class="logo-tagline">Powered by LangGraph & AI</span>
+  </a>
+  <div class="nav-links">
+    <a href="#demo">Demo</a>
+    <a href="#features">Features</a>
+    <a href="#how">How It Works</a>
+    <a href="#tech">Tech Stack</a>
+  </div>
+  <div class="nav-cta">
+    <a href="https://github.com/654186915-netizen/ai-travel-agent" class="btn-ghost" target="_blank">GitHub</a>
+    <a href="#demo" class="btn-solid">Try Now</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-badge">&#127760;&#128663;&#65039; AI-Powered Travel Planning</div>
+  <h1>Plan Your Trip<br/><span>With AI Intelligence.</span></h1>
+  <p class="hero-sub">
+    Simply describe where you want to go. Our AI agent finds the best flights and hotels using real-time data from Google Flights and Google Hotels.
+  </p>
+  <div class="hero-btns">
+    <a href="#demo" class="btn-hero-primary">&#128269; Try Live Demo &#8594;</a>
+    <a href="https://github.com/654186915-netizen/ai-travel-agent" class="btn-hero-secondary" target="_blank">&#128196; View Source</a>
+  </div>
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="hero-stat-val">Real-Time</div>
+      <div class="hero-stat-label">Google Flights & Hotels API</div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="hero-stat">
+      <div class="hero-stat-val">AI Agent</div>
+      <div class="hero-stat-label">LangGraph multi-step reasoning</div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="hero-stat">
+      <div class="hero-stat-val">DeepSeek</div>
+      <div class="hero-stat-label">Powered by DeepSeek LLM</div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="hero-stat">
+      <div class="hero-stat-val">30s</div>
+      <div class="hero-stat-label">from query to results</div>
+    </div>
+  </div>
+</section>
+
+<div class="demo-bar">
+  <div class="demo-item">&#9992;&#65039; Google Flights Integration</div>
+  <div class="demo-item">&#127976; Google Hotels Search</div>
+  <div class="demo-item">&#128172; Natural Language Query</div>
+  <div class="demo-item">&#128231; Email Report Delivery</div>
+  <div class="demo-item">&#129302; AI-Powered Reasoning</div>
+</div>
+
+<!-- DEMO -->
+<section class="demo-section" id="demo">
+  <div class="center">
+    <div class="section-label">Live Demo</div>
+    <div class="section-title">Try AI Travel Agent</div>
+    <p class="section-sub">Enter your travel query below and see how the AI agent finds flights and hotels for you.</p>
+  </div>
+  <div class="demo-container">
+    <div class="demo-header">
+      <div>
+        <div class="demo-header-title">&#9992;&#65039;&#127976; AI Travel Agent</div>
+        <div class="demo-header-sub">Describe your trip and get instant results</div>
+      </div>
+    </div>
+    <div class="demo-body">
+      <div class="demo-label">Your Travel Query</div>
+      <textarea class="demo-textarea" id="queryInput" placeholder="e.g. I want to travel to Amsterdam from Madrid from October 1st to 7th. Find me flights and 4-star hotels."></textarea>
+      <div class="demo-btn-row">
+        <button class="demo-submit" id="submitBtn" onclick="handleSubmit()">&#128640; Get Travel Information</button>
+        <button class="demo-example" onclick="fillExample()">&#9998; Load Example</button>
+      </div>
+      <div class="demo-error" id="errorMsg"></div>
+      <div class="demo-result" id="resultBox">
+        <div class="demo-result-header">
+          <div class="demo-result-icon">&#10003;</div>
+          <div class="demo-result-title">Travel Information Found</div>
+        </div>
+        <div class="demo-result-content" id="resultContent"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features-section" id="features">
+  <div class="center">
+    <div class="section-label">Core Features</div>
+    <div class="section-title">Intelligent Travel Planning</div>
+    <p class="section-sub">Powered by LangGraph agent framework, the system reasons through your request step by step.</p>
+  </div>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon-wrap fi-teal">&#128172;</div>
+      <h4>Natural Language Understanding</h4>
+      <p>Just describe your trip in plain English. The AI extracts destinations, dates, preferences, and budget automatically.</p>
+      <div class="feature-tags"><span class="ftag">NLU</span><span class="ftag">Intent Parsing</span><span class="ftag">Entity Extraction</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon-wrap fi-blue">&#128640;</div>
+      <h4>Real-Time Flight Search</h4>
+      <p>Searches Google Flights API for the best available flights including prices, airlines, duration, and direct booking links.</p>
+      <div class="feature-tags"><span class="ftag">Google Flights</span><span class="ftag">Multi-Airline</span><span class="ftag">Price Comparison</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon-wrap fi-purple">&#127976;</div>
+      <h4>Hotel Discovery</h4>
+      <p>Finds top-rated hotels matching your criteria with photos, ratings, amenities, pricing per night, and total cost estimates.</p>
+      <div class="feature-tags"><span class="ftag">Google Hotels</span><span class="ftag">Star Rating</span><span class="ftag">Amenities Filter</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon-wrap fi-orange">&#128231;</div>
+      <h4>Human-in-the-Loop Email</h4>
+      <p>Review results before sending. The AI generates a beautifully formatted HTML email with all travel details.</p>
+      <div class="feature-tags"><span class="ftag">SendGrid</span><span class="ftag">HTML Email</span><span class="ftag">Review Before Send</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-section" id="how">
+  <div class="center">
+    <div class="section-label">How It Works</div>
+    <div class="section-title">From Query to Itinerary in Seconds</div>
+    <p class="section-sub">The LangGraph agent orchestrates multiple AI reasoning steps to deliver comprehensive results.</p>
+  </div>
+  <div class="steps-row">
+    <div class="step">
+      <div class="step-num">1</div>
+      <h4>Enter Your Query</h4>
+      <p>Describe your ideal trip: destination, dates, hotel preferences, number of travelers.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <h4>AI Reasoning</h4>
+      <p>The agent analyzes your request, decides which tools to call, and plans the search strategy.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <h4>Tool Execution</h4>
+      <p>Calls Google Flights and Hotels APIs simultaneously to gather real-time availability and pricing.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <h4>Results Delivered</h4>
+      <p>AI synthesizes all data into a clear, structured response with links, logos, and pricing.</p>
+    </div>
+  </div>
+</section>
+
+<!-- TECH STACK -->
+<section class="tech-section" id="tech">
+  <div class="center">
+    <div class="section-label">Tech Stack</div>
+    <div class="section-title">Built With Modern AI Tools</div>
+    <p class="section-sub">A production-grade AI agent architecture using the best open-source tools.</p>
+  </div>
+  <div class="tech-grid">
+    <div class="tech-card">
+      <div class="tech-icon" style="background:var(--teal-light)">&#129302;</div>
+      <div class="tech-name">DeepSeek LLM</div>
+      <div class="tech-desc">Large language model for natural language understanding and response generation</div>
+    </div>
+    <div class="tech-card">
+      <div class="tech-icon" style="background:var(--purple-light)">&#128300;</div>
+      <div class="tech-name">LangGraph</div>
+      <div class="tech-desc">Multi-step agent framework with state management and tool orchestration</div>
+    </div>
+    <div class="tech-card">
+      <div class="tech-icon" style="background:var(--blue-light)">&#128269;</div>
+      <div class="tech-name">SerpAPI</div>
+      <div class="tech-desc">Google Flights and Google Hotels search engine integration</div>
+    </div>
+    <div class="tech-card">
+      <div class="tech-icon" style="background:var(--orange-light)">&#128640;</div>
+      <div class="tech-name">Streamlit</div>
+      <div class="tech-desc">Python web framework for rapid AI application prototyping</div>
+    </div>
+    <div class="tech-card">
+      <div class="tech-icon" style="background:var(--green-light)">&#128268;</div>
+      <div class="tech-name">LangChain</div>
+      <div class="tech-desc">Tool binding, message management, and LLM abstraction layer</div>
+    </div>
+    <div class="tech-card">
+      <div class="tech-icon" style="background:var(--yellow-light)">&#128231;</div>
+      <div class="tech-name">SendGrid</div>
+      <div class="tech-desc">Email delivery service for sending formatted travel itineraries</div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <h2>Ready to Plan Your<br/>Next Adventure?</h2>
+  <p>Start with a simple description of your dream trip. AI does the rest.</p>
+  <div class="cta-btns">
+    <a href="#demo" class="btn-cta-white">&#128269; Try the Demo</a>
+    <a href="https://github.com/654186915-netizen/ai-travel-agent" class="btn-cta-outline" target="_blank">&#128196; View on GitHub</a>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <div class="footer-logo">
+        <div class="footer-logo-mark">&#9992;&#65039;</div>
+        AI Travel Agent
+      </div>
+      <div class="footer-slogan">Powered by LangGraph & DeepSeek</div>
+      <p>An intelligent travel planning assistant that uses AI agents to search for flights and hotels in real time. Built with LangGraph, LangChain, and Streamlit.</p>
+    </div>
+    <div class="footer-col">
+      <h5>Project</h5>
+      <a href="https://github.com/654186915-netizen/ai-travel-agent" target="_blank">GitHub Repository</a>
+      <a href="#features">Features</a>
+      <a href="#how">How It Works</a>
+      <a href="#tech">Tech Stack</a>
+    </div>
+    <div class="footer-col">
+      <h5>Technologies</h5>
+      <a href="https://github.com/langchain-ai/langgraph" target="_blank">LangGraph</a>
+      <a href="https://github.com/langchain-ai/langchain" target="_blank">LangChain</a>
+      <a href="https://platform.deepseek.com" target="_blank">DeepSeek</a>
+      <a href="https://serpapi.com" target="_blank">SerpAPI</a>
+      <a href="https://streamlit.io" target="_blank">Streamlit</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>&copy; 2026 AI Travel Agent. Open source under MIT License.</span>
+    <div class="footer-badges">
+      <span class="footer-badge">&#129302; DeepSeek</span>
+      <span class="footer-badge">&#128300; LangGraph</span>
+      <span class="footer-badge">&#128640; Streamlit</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+const exampleQuery = "I want to travel to New York from Madrid from October 1st to 7th. Find me flights and 4-star hotels.";
+
+function fillExample() {
+  document.getElementById('queryInput').value = exampleQuery;
+  document.getElementById('queryInput').focus();
+}
+
+function handleSubmit() {
+  const query = document.getElementById('queryInput').value.trim();
+  const btn = document.getElementById('submitBtn');
+  const resultBox = document.getElementById('resultBox');
+  const resultContent = document.getElementById('resultContent');
+  const errorMsg = document.getElementById('errorMsg');
+
+  errorMsg.style.display = 'none';
+  resultBox.classList.remove('show');
+
+  if (!query) {
+    errorMsg.textContent = 'Please enter a travel query.';
+    errorMsg.style.display = 'block';
+    return;
+  }
+
+  btn.classList.add('loading');
+  btn.innerHTML = '&#9203; Searching...';
+
+  setTimeout(function() {
+    btn.classList.remove('loading');
+    btn.innerHTML = '&#128640; Get Travel Information';
+    resultBox.classList.add('show');
+    resultContent.innerHTML = generateDemoResult();
+    resultBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 1500);
+}
+
+function generateDemoResult() {
+  return `
+    <h3>&#9992;&#65039; Flights from Madrid (MAD) to New York (JFK)</h3>
+
+    <div class="flight-item">
+      <div class="item-label">Option 1</div>
+      <div class="item-title">American Airlines &middot; AA-100</div>
+      <div class="item-detail">
+        <strong>Departure:</strong> Madrid (MAD) at 10:25 AM &rarr; <strong>Arrival:</strong> New York (JFK) at 12:25 PM<br>
+        <strong>Duration:</strong> 8h 00m &middot; <strong>Class:</strong> Economy &middot; <strong>Stops:</strong> Direct
+      </div>
+      <div class="item-price">Price: $702 per person</div>
+      <a href="https://www.google.com/flights" target="_blank" class="item-link">Book on Google Flights &#8594;</a>
+    </div>
+
+    <div class="flight-item">
+      <div class="item-label">Option 2</div>
+      <div class="item-title">Iberia &middot; IB-6251</div>
+      <div class="item-detail">
+        <strong>Departure:</strong> Madrid (MAD) at 12:25 PM &rarr; <strong>Arrival:</strong> New York (JFK) at 2:40 PM<br>
+        <strong>Duration:</strong> 8h 15m &middot; <strong>Class:</strong> Economy &middot; <strong>Stops:</strong> Direct
+      </div>
+      <div class="item-price">Price: $702 per person</div>
+      <a href="https://www.google.com/flights" target="_blank" class="item-link">Book on Google Flights &#8594;</a>
+    </div>
+
+    <div class="flight-item">
+      <div class="item-label">Option 3</div>
+      <div class="item-title">Delta Airlines &middot; DL-182</div>
+      <div class="item-detail">
+        <strong>Departure:</strong> Madrid (MAD) at 10:00 AM &rarr; <strong>Arrival:</strong> New York (JFK) at 12:30 PM<br>
+        <strong>Duration:</strong> 8h 30m &middot; <strong>Class:</strong> Economy &middot; <strong>Stops:</strong> 1 stop
+      </div>
+      <div class="item-price">Price: $738 per person</div>
+      <a href="https://www.google.com/flights" target="_blank" class="item-link">Book on Google Flights &#8594;</a>
+    </div>
+
+    <h3 style="margin-top:24px;">&#127976; 4-Star Hotels in New York</h3>
+
+    <div class="hotel-item">
+      <div class="item-label">Hotel 1</div>
+      <div class="item-title">NobleDen Hotel</div>
+      <div class="item-detail">
+        <strong>Location:</strong> Near Washington Square Park<br>
+        <strong>Rating:</strong> 4.8/5 (656 reviews)<br>
+        <strong>Amenities:</strong> Free Wi-Fi, Parking, Air Conditioning, Restaurant
+      </div>
+      <div class="item-price">Rate: $537/night &middot; Total (6 nights): $3,222</div>
+      <a href="#" target="_blank" class="item-link">Visit Website &#8594;</a>
+    </div>
+
+    <div class="hotel-item">
+      <div class="item-label">Hotel 2</div>
+      <div class="item-title">Hotel 50 Bowery NYC</div>
+      <div class="item-detail">
+        <strong>Location:</strong> Lower East Side, Manhattan<br>
+        <strong>Rating:</strong> 4.5/5 (2,130 reviews)<br>
+        <strong>Amenities:</strong> Rooftop Bar, Free Wi-Fi, Fitness Center, Concierge
+      </div>
+      <div class="item-price">Rate: $412/night &middot; Total (6 nights): $2,472</div>
+      <a href="#" target="_blank" class="item-link">Visit Website &#8594;</a>
+    </div>
+
+    <div class="hotel-item">
+      <div class="item-label">Hotel 3</div>
+      <div class="item-title">The Marx Hotel</div>
+      <div class="item-detail">
+        <strong>Location:</strong> Upper West Side, Manhattan<br>
+        <strong>Rating:</strong> 4.4/5 (1,890 reviews)<br>
+        <strong>Amenities:</strong> Free Wi-Fi, Business Center, Laundry, Pet-Friendly
+      </div>
+      <div class="item-price">Rate: $389/night &middot; Total (6 nights): $2,334</div>
+      <a href="#" target="_blank" class="item-link">Visit Website &#8594;</a>
+    </div>
+
+    <p style="margin-top:16px;font-size:0.78rem;color:var(--text2);font-style:italic;">
+      * This is a demo with sample data. Connect to the live backend (Streamlit + DeepSeek + SerpAPI) for real-time results.
+    </p>
+  `;
+}
+</script>
+
+</body>
+</html>
