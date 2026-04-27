@@ -235,7 +235,7 @@
     </div>
     <div class="demo-body">
       <div class="demo-label">Your Travel Query</div>
-      <textarea class="demo-textarea" id="queryInput" placeholder="e.g. I want to travel to Amsterdam from Madrid from October 1st to 7th. Find me flights and 4-star hotels."></textarea>
+      <textarea class="demo-textarea" id="queryInput" placeholder="e.g. I want to travel to Amsterdam from Madrid from October 1st to 7th. Find me flights and 4-star hotels." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();handleSubmit();}"></textarea>
       <div class="demo-btn-row">
         <button class="demo-submit" id="submitBtn" onclick="handleSubmit()">&#128640; Get Travel Information</button>
         <button class="demo-example" onclick="fillExample()">&#9998; Load Example</button>
@@ -430,94 +430,137 @@ function handleSubmit() {
   }
 
   btn.classList.add('loading');
-  btn.innerHTML = '&#9203; Searching...';
+  btn.disabled = true;
+  btn.innerHTML = '&#9203; Searching flights and hotels...';
 
   setTimeout(function() {
     btn.classList.remove('loading');
+    btn.disabled = false;
     btn.innerHTML = '&#128640; Get Travel Information';
     resultBox.classList.add('show');
-    resultContent.innerHTML = generateDemoResult();
+    resultContent.innerHTML = generateDemoResult(query);
     resultBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  }, 1500);
+  }, 1200);
 }
 
-function generateDemoResult() {
+function extractCities(q) {
+  const cities = {
+    'amsterdam': {name:'Amsterdam', code:'AMS', country:'Netherlands'},
+    'london': {name:'London', code:'LHR', country:'UK'},
+    'paris': {name:'Paris', code:'CDG', country:'France'},
+    'tokyo': {name:'Tokyo', code:'NRT', country:'Japan'},
+    'new york': {name:'New York', code:'JFK', country:'USA'},
+    'beijing': {name:'Beijing', code:'PEK', country:'China'},
+    'shanghai': {name:'Shanghai', code:'PVG', country:'China'},
+    'hong kong': {name:'Hong Kong', code:'HKG', country:'China'},
+    'singapore': {name:'Singapore', code:'SIN', country:'Singapore'},
+    'bangkok': {name:'Bangkok', code:'BKK', country:'Thailand'},
+    'madrid': {name:'Madrid', code:'MAD', country:'Spain'},
+    'sydney': {name:'Sydney', code:'SYD', country:'Australia'},
+    'dubai': {name:'Dubai', code:'DXB', country:'UAE'},
+    'rome': {name:'Rome', code:'FCO', country:'Italy'},
+    'barcelona': {name:'Barcelona', code:'BCN', country:'Spain'},
+    'seoul': {name:'Seoul', code:'ICN', country:'South Korea'},
+    'los angeles': {name:'Los Angeles', code:'LAX', country:'USA'},
+    'san francisco': {name:'San Francisco', code:'SFO', country:'USA'},
+    'toronto': {name:'Toronto', code:'YYZ', country:'Canada'},
+    'berlin': {name:'Berlin', code:'BER', country:'Germany'},
+    'miami': {name:'Miami', code:'MIA', country:'USA'},
+  };
+  const ql = q.toLowerCase();
+  let found = [];
+  for (const [key, val] of Object.entries(cities)) {
+    if (ql.includes(key)) found.push(val);
+  }
+  return found;
+}
+
+function generateDemoResult(query) {
+  const cities = extractCities(query);
+  const to = cities.length >= 1 ? cities[0] : {name:'Amsterdam', code:'AMS', country:'Netherlands'};
+  const from = cities.length >= 2 ? cities[1] : {name:'Madrid', code:'MAD', country:'Spain'};
+  const ql = query.toLowerCase();
+  const isRoundTrip = ql.includes('round') || ql.includes('return');
+  const tripType = isRoundTrip ? 'Round Trip' : 'One Way';
+  const hotels = ql.match(/(\d+)\s*[-x]?\s*star/);
+  const starFilter = hotels ? hotels[1] : '4';
+
   return `
-    <h3>&#9992;&#65039; Flights from Madrid (MAD) to New York (JFK)</h3>
+    <h3>&#9992;&#65039; Flights: ${from.name} (${from.code}) &rarr; ${to.name} (${to.code})</h3>
 
     <div class="flight-item">
-      <div class="item-label">Option 1</div>
-      <div class="item-title">American Airlines &middot; AA-100</div>
+      <div class="item-label">Option 1 &middot; ${tripType}</div>
+      <div class="item-title">Direct Flight</div>
       <div class="item-detail">
-        <strong>Departure:</strong> Madrid (MAD) at 10:25 AM &rarr; <strong>Arrival:</strong> New York (JFK) at 12:25 PM<br>
-        <strong>Duration:</strong> 8h 00m &middot; <strong>Class:</strong> Economy &middot; <strong>Stops:</strong> Direct
+        <strong>Departure:</strong> ${from.name} (${from.code}) at 09:45 AM &rarr; <strong>Arrival:</strong> ${to.name} (${to.code}) at 12:30 PM<br>
+        <strong>Duration:</strong> ~2h 45m &middot; <strong>Class:</strong> Economy &middot; <strong>Stops:</strong> Direct
       </div>
-      <div class="item-price">Price: $702 per person</div>
+      <div class="item-price">Price: $${(300 + Math.floor(Math.random()*400))} per person</div>
       <a href="https://www.google.com/flights" target="_blank" class="item-link">Book on Google Flights &#8594;</a>
     </div>
 
     <div class="flight-item">
-      <div class="item-label">Option 2</div>
-      <div class="item-title">Iberia &middot; IB-6251</div>
+      <div class="item-label">Option 2 &middot; ${tripType}</div>
+      <div class="item-title">1 Stop via Hub</div>
       <div class="item-detail">
-        <strong>Departure:</strong> Madrid (MAD) at 12:25 PM &rarr; <strong>Arrival:</strong> New York (JFK) at 2:40 PM<br>
-        <strong>Duration:</strong> 8h 15m &middot; <strong>Class:</strong> Economy &middot; <strong>Stops:</strong> Direct
+        <strong>Departure:</strong> ${from.name} (${from.code}) at 11:20 AM &rarr; <strong>Arrival:</strong> ${to.name} (${to.code}) at 4:15 PM<br>
+        <strong>Duration:</strong> ~5h 55m &middot; <strong>Class:</strong> Economy &middot; <strong>Stops:</strong> 1 stop
       </div>
-      <div class="item-price">Price: $702 per person</div>
+      <div class="item-price">Price: $${(180 + Math.floor(Math.random()*250))} per person</div>
       <a href="https://www.google.com/flights" target="_blank" class="item-link">Book on Google Flights &#8594;</a>
     </div>
 
     <div class="flight-item">
-      <div class="item-label">Option 3</div>
-      <div class="item-title">Delta Airlines &middot; DL-182</div>
+      <div class="item-label">Option 3 &middot; ${tripType}</div>
+      <div class="item-title">Premium Economy</div>
       <div class="item-detail">
-        <strong>Departure:</strong> Madrid (MAD) at 10:00 AM &rarr; <strong>Arrival:</strong> New York (JFK) at 12:30 PM<br>
-        <strong>Duration:</strong> 8h 30m &middot; <strong>Class:</strong> Economy &middot; <strong>Stops:</strong> 1 stop
+        <strong>Departure:</strong> ${from.name} (${from.code}) at 2:00 PM &rarr; <strong>Arrival:</strong> ${to.name} (${to.code}) at 4:50 PM<br>
+        <strong>Duration:</strong> ~2h 50m &middot; <strong>Class:</strong> Premium Economy &middot; <strong>Stops:</strong> Direct
       </div>
-      <div class="item-price">Price: $738 per person</div>
+      <div class="item-price">Price: $${(450 + Math.floor(Math.random()*350))} per person</div>
       <a href="https://www.google.com/flights" target="_blank" class="item-link">Book on Google Flights &#8594;</a>
     </div>
 
-    <h3 style="margin-top:24px;">&#127976; 4-Star Hotels in New York</h3>
+    <h3 style="margin-top:24px;">&#127976; ${starFilter}-Star Hotels in ${to.name}</h3>
 
     <div class="hotel-item">
       <div class="item-label">Hotel 1</div>
-      <div class="item-title">NobleDen Hotel</div>
+      <div class="item-title">${to.name} Grand Hotel</div>
       <div class="item-detail">
-        <strong>Location:</strong> Near Washington Square Park<br>
-        <strong>Rating:</strong> 4.8/5 (656 reviews)<br>
-        <strong>Amenities:</strong> Free Wi-Fi, Parking, Air Conditioning, Restaurant
+        <strong>Location:</strong> City Center, ${to.name}<br>
+        <strong>Rating:</strong> 4.${6+Math.floor(Math.random()*4)}/5 (${500+Math.floor(Math.random()*2000)} reviews)<br>
+        <strong>Amenities:</strong> Free Wi-Fi, Parking, Air Conditioning, Restaurant, Fitness Center
       </div>
-      <div class="item-price">Rate: $537/night &middot; Total (6 nights): $3,222</div>
-      <a href="#" target="_blank" class="item-link">Visit Website &#8594;</a>
+      <div class="item-price">Rate: $${200+Math.floor(Math.random()*300)}/night &middot; Total (est.): $${(200+Math.floor(Math.random()*300))*6}</div>
+      <a href="https://www.google.com/travel/hotels" target="_blank" class="item-link">View on Google Hotels &#8594;</a>
     </div>
 
     <div class="hotel-item">
       <div class="item-label">Hotel 2</div>
-      <div class="item-title">Hotel 50 Bowery NYC</div>
+      <div class="item-title">The ${to.name} Plaza</div>
       <div class="item-detail">
-        <strong>Location:</strong> Lower East Side, Manhattan<br>
-        <strong>Rating:</strong> 4.5/5 (2,130 reviews)<br>
-        <strong>Amenities:</strong> Rooftop Bar, Free Wi-Fi, Fitness Center, Concierge
+        <strong>Location:</strong> Downtown, ${to.name}<br>
+        <strong>Rating:</strong> 4.${3+Math.floor(Math.random()*6)}/5 (${800+Math.floor(Math.random()*3000)} reviews)<br>
+        <strong>Amenities:</strong> Rooftop Bar, Free Wi-Fi, Pool, Spa, Concierge
       </div>
-      <div class="item-price">Rate: $412/night &middot; Total (6 nights): $2,472</div>
-      <a href="#" target="_blank" class="item-link">Visit Website &#8594;</a>
+      <div class="item-price">Rate: $${150+Math.floor(Math.random()*250)}/night &middot; Total (est.): $${(150+Math.floor(Math.random()*250))*6}</div>
+      <a href="https://www.google.com/travel/hotels" target="_blank" class="item-link">View on Google Hotels &#8594;</a>
     </div>
 
     <div class="hotel-item">
       <div class="item-label">Hotel 3</div>
-      <div class="item-title">The Marx Hotel</div>
+      <div class="item-title">${to.name} City Stay</div>
       <div class="item-detail">
-        <strong>Location:</strong> Upper West Side, Manhattan<br>
-        <strong>Rating:</strong> 4.4/5 (1,890 reviews)<br>
-        <strong>Amenities:</strong> Free Wi-Fi, Business Center, Laundry, Pet-Friendly
+        <strong>Location:</strong> Near ${to.code} Airport, ${to.name}<br>
+        <strong>Rating:</strong> 4.${2+Math.floor(Math.random()*6)}/5 (${300+Math.floor(Math.random()*1500)} reviews)<br>
+        <strong>Amenities:</strong> Free Wi-Fi, Shuttle Service, Business Center, Laundry
       </div>
-      <div class="item-price">Rate: $389/night &middot; Total (6 nights): $2,334</div>
-      <a href="#" target="_blank" class="item-link">Visit Website &#8594;</a>
+      <div class="item-price">Rate: $${100+Math.floor(Math.random()*200)}/night &middot; Total (est.): $${(100+Math.floor(Math.random()*200))*6}</div>
+      <a href="https://www.google.com/travel/hotels" target="_blank" class="item-link">View on Google Hotels &#8594;</a>
     </div>
 
     <p style="margin-top:16px;font-size:0.78rem;color:var(--text2);font-style:italic;">
-      * This is a demo with sample data. Connect to the live backend (Streamlit + DeepSeek + SerpAPI) for real-time results.
+      * This is a demo with sample data based on your query. Connect to the live backend (Streamlit + DeepSeek + SerpAPI) for real-time results.
     </p>
   `;
 }
